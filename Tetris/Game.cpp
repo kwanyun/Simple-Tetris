@@ -1,7 +1,9 @@
 #include "Game.h"
 
+using namespace std::chrono;
+
 Application::Application(std::string name)
-	:userName(name), currentTime(std::chrono::steady_clock::now()) {
+	:userName(name), currentTime(steady_clock::now()) {
 	for (int i = 0; i < 12; i++)
 	{
 		for (int j = 0; j < 12; j++)
@@ -19,33 +21,13 @@ void Application::Run()
 	Block* currentBlock = Application::GenBlock(0);
 	while (true)
 	{
-
 		//check key
-		if (GetAsyncKeyState(VK_LEFT) & 0x0001)
-		{
-			BlockMove(currentBlock, 0, -1);
-		}
-		else if (GetAsyncKeyState(VK_RIGHT) & 0x0001)
-		{
-			BlockMove(currentBlock, 0, 1);
-		}
-		else if (GetAsyncKeyState(VK_DOWN) & 0x0001)
-		{
-			BlockMove(currentBlock, 1, 0);
-		}
-		else if (GetAsyncKeyState(VK_SPACE) & 0x0001)
-		{
-			//RotateBlock(currentBlock);
-		}
-		else if (GetAsyncKeyState(VK_ESCAPE) & 0x0001)
-		{
-			isOver = true;
-		}
+		CheckKey(currentBlock);		
 
 		//move block
-		if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - currentTime).count() > 10000)
+		if (std::chrono::duration_cast<seconds>(steady_clock::now() - currentTime).count() > 1)
 		{
-			currentTime = std::chrono::steady_clock::now();
+			currentTime = steady_clock::now();
 			//if block current, move down
 			if (blockGenerated)
 			{
@@ -55,7 +37,8 @@ void Application::Run()
 			//if block is not generated yet, generate
 			else
 			{
-				currentBlock = Application::GenBlock(3);
+				//random block generation with time
+				currentBlock = Application::GenBlock(duration_cast<milliseconds>(steady_clock::now()-currentTime).count() / 5);
 			}
 		}
 		//check end
@@ -105,7 +88,7 @@ Block* Application::GenBlock(unsigned int genNum)
 	blockGenerated = true;
 	needUpdate = true;
 	
-	if (!CheckBlock(mBlock))
+	if (CheckBlock(mBlock)==FLOOR)
 	{
 		isOver = true;
 		delete mBlock;
@@ -115,6 +98,7 @@ Block* Application::GenBlock(unsigned int genNum)
 		return mBlock;
 }
 
+//adding block in map to render later
 void Application::AddBlockToMap(Block* currentBlock)
 {
 	for (int i = 0; i < currentBlock->rows; i++)
@@ -126,7 +110,7 @@ void Application::AddBlockToMap(Block* currentBlock)
 		}
 	}
 }
-
+//removing block from the map to render later
 void Application::DelBlockFromMap(Block* currentBlock)
 {
 	for (int i = 0; i < currentBlock->rows; i++)
@@ -140,40 +124,72 @@ void Application::DelBlockFromMap(Block* currentBlock)
 }
 
 
-bool Application::CheckBlock(Block* theBlock , int row , int col )
+unsigned int Application::CheckBlock(Block* theBlock , int row , int col )
 {
-	for (int i = 0; i < theBlock->rows; i++)
+	//check from the start to end
+	int startR = theBlock->curR + row;
+	int endR = theBlock->curR + row + theBlock->rows;
+	int startC = theBlock->curC + col;
+	int endC = theBlock->curC + col + theBlock->columns;
+
+	//check if wall/floor/air
+	for (int i = startR; i < endR; i++)
 	{
-		for (int j = 0; j < theBlock->columns; j++)
+		for (int j = startC; j < endC; j++)
 		{
-			if ((theBlock->curR + row + i) < 0 || (theBlock->curC + col + j < 0) || (theBlock->curR + row + i) > 10 || (theBlock->curC + col + j > 10)||(3 * (i + row) + (j + col)<0))
-				return false;
-			if ((map[theBlock->curR + row + i][theBlock->curC + col + j] != ' ' && theBlock->blockIn[3 * (i + row) + (j + col)] != '@')
-					&& theBlock->blockIn[3 * i + j] != ' ')
-				return false;
+			if (map[i][j] == 'l') return WALL;
+			else if (map[i][j] == '-') return FLOOR;
+			else if (map[i][j] == '@' && 
+				theBlock->blockIn[3 * (i - theBlock->curR) + j - theBlock->curC] != '@') return FLOOR;
 		}
 	}
-	return true;
-	
+	return AIR;
 }
 
+//move if possible
 void Application::BlockMove(Block* theBlock, int row, int col)
 {
 	needUpdate = true;
 	//move block one step if possible
-	if (CheckBlock(theBlock,  row,  col))
+	if (CheckBlock(theBlock, row, col) == AIR)
 	{
 		DelBlockFromMap(theBlock);
 		theBlock->curR = theBlock->curR + row;
 		theBlock->curC = theBlock->curC + col;
 		AddBlockToMap(theBlock);
 	}
-	else
+	else if (CheckBlock(theBlock, row, col) == FLOOR)
 	{
 		//Add Block to map for rendering
 		AddBlockToMap(theBlock);
 		//release memory
 		delete theBlock;
 		blockGenerated = false;
+	}
+	else {//do nothing}
+	}
+}
+
+void Application::CheckKey(Block* block)
+{
+	if (GetAsyncKeyState(VK_LEFT) & 0x0001)
+	{
+		BlockMove(block, 0, -1);
+	}
+	else if (GetAsyncKeyState(VK_RIGHT) & 0x0001)
+	{
+		BlockMove(block, 0, 1);
+	}
+	else if (GetAsyncKeyState(VK_DOWN) & 0x0001)
+	{
+		BlockMove(block, 1, 0);
+	}
+	else if (GetAsyncKeyState(VK_SPACE) & 0x0001)
+	{
+		//RotateBlock(currentBlock);
+	}
+	else if (GetAsyncKeyState(VK_ESCAPE) & 0x0001)
+	{
+		isOver = true;
 	}
 }
