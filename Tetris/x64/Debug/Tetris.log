@@ -1,5 +1,5 @@
 ﻿  Game.cpp
-C:\Users\kwan\Desktop\KU\projects\Simple-Tetris\Tetris\Game.cpp(61,111): warning C4244: 'argument': conversion from '_Rep' to 'unsigned int', possible loss of data
+C:\Users\kwan\Desktop\KU\projects\Simple-Tetris\Tetris\Game.cpp(29,87): warning C4244: '+=': conversion from '_Rep' to 'unsigned int', possible loss of data
           with
           [
               _Rep=__int64

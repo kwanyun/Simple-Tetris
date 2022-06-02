@@ -29,6 +29,7 @@ public:
 	Application(std::string ="anonymous user");
 	void Run();
 	void Render();
+	void BlockScore(Block* block);
 	Block* GenBlock(unsigned int genNum);
 	void CheckKey(Block* currentBlock);
 	void AddBlockToMap(Block* currentBlock);

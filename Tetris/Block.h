@@ -10,6 +10,7 @@ public:
 	Block(int n);
 
 	inline int GetType() { return typenum; }
+	void Rotate();
 	int rows=3;
 	int columns=3;
 	int curR = 0;

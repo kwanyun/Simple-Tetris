@@ -17,39 +17,30 @@ Application::Application(std::string name)
 
 void Application::Run()
 {
+	auto start = steady_clock::now();
 	//random block init
 	Block* currentBlock = Application::GenBlock(0);
 	while (true)
 	{
-		//check key
 		CheckKey(currentBlock);		
 
-		//move block
-		if (std::chrono::duration_cast<seconds>(steady_clock::now() - currentTime).count() > 1)
+		if (std::chrono::duration_cast<milliseconds>(steady_clock::now() - currentTime).count() > 1000)
 		{
+			score += duration_cast<milliseconds>(steady_clock::now() - currentTime).count() / 7;
 			currentTime = steady_clock::now();
-			//if block current, move down
 			if (blockGenerated)
-			{
-				//move block one step down if possible
 				BlockMove(currentBlock, 1, 0);
-			}
-			//if block is not generated yet, generate
 			else
-			{
-				//random block generation with time
-				currentBlock = Application::GenBlock(duration_cast<milliseconds>(steady_clock::now()-currentTime).count() / 5);
-			}
+				currentBlock = Application::GenBlock(duration_cast<milliseconds>(steady_clock::now()-start).count() % 5);
 		}
-		//check end
-		if (isOver)
+		//check if game end
+		if (isOver||map[0][1]=='@'|| map[0][2] == '@')
 		{
 			system("cls");
-			std::cout << "Game END" << std::endl;
-			return ;
+			std::cout << "Game END" << std::endl
+				<<"Your Score : "<<score<<std::endl; return;
 		}
-
-		//render
+		BlockScore(currentBlock);
 		if (needUpdate)
 		{
 			needUpdate = false;
@@ -88,9 +79,10 @@ Block* Application::GenBlock(unsigned int genNum)
 	blockGenerated = true;
 	needUpdate = true;
 	
-	if (CheckBlock(mBlock)==FLOOR)
+	if (CheckBlock(mBlock)==FLOOR|| CheckBlock(mBlock) == WALL)
 	{
 		isOver = true;
+		blockGenerated = false;
 		delete mBlock;
 		return NULL;
 	}
@@ -126,6 +118,7 @@ void Application::DelBlockFromMap(Block* currentBlock)
 
 unsigned int Application::CheckBlock(Block* theBlock , int row , int col )
 {
+	DelBlockFromMap(theBlock);
 	//check from the start to end
 	int startR = theBlock->curR + row;
 	int endR = theBlock->curR + row + theBlock->rows;
@@ -137,10 +130,9 @@ unsigned int Application::CheckBlock(Block* theBlock , int row , int col )
 	{
 		for (int j = startC; j < endC; j++)
 		{
+			if (theBlock->blockIn[3 * (i - theBlock->curR - row) + (j - theBlock->curC - col)] == ' ') continue;
 			if (map[i][j] == 'l') return WALL;
-			else if (map[i][j] == '-') return FLOOR;
-			else if (map[i][j] == '@' && 
-				theBlock->blockIn[3 * (i - theBlock->curR) + j - theBlock->curC] != '@') return FLOOR;
+			else if (map[i][j] == '-' || map[i][j] == '@') return FLOOR;
 		}
 	}
 	return AIR;
@@ -153,7 +145,6 @@ void Application::BlockMove(Block* theBlock, int row, int col)
 	//move block one step if possible
 	if (CheckBlock(theBlock, row, col) == AIR)
 	{
-		DelBlockFromMap(theBlock);
 		theBlock->curR = theBlock->curR + row;
 		theBlock->curC = theBlock->curC + col;
 		AddBlockToMap(theBlock);
@@ -184,12 +175,45 @@ void Application::CheckKey(Block* block)
 	{
 		BlockMove(block, 1, 0);
 	}
-	else if (GetAsyncKeyState(VK_SPACE) & 0x0001)
+	else if (GetAsyncKeyState(VK_UP) & 0x0001)
 	{
-		//RotateBlock(currentBlock);
+		needUpdate = true;
+		DelBlockFromMap(block);
+		block->Rotate();
 	}
 	else if (GetAsyncKeyState(VK_ESCAPE) & 0x0001)
 	{
 		isOver = true;
+	}
+}
+
+void Application::BlockScore(Block* block)
+{
+	bool getpoint = true;
+	for (int i = 10; i >=0; i--)
+	{
+		getpoint = true;
+		for (int j = 1; j < 11; j++)
+		{
+			if (map[i][j] == ' ') 
+				getpoint = false;
+		}
+		if (getpoint)
+		{
+			needUpdate = true;
+			getpoint = false;
+			score += 10000;
+			for (int k = 0; k < 12; k++)
+			{
+				if (map[i][k]=='@') map[i][k] = ' ';
+			}
+			for (int p = i; p > 1; p--)
+			{
+				for (int q = 1; q < 11; q++)
+					map[p][q] = map[p-1][q];
+			}
+			block->curR += 1;
+			DelBlockFromMap(block);
+		}
 	}
 }

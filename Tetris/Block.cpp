@@ -32,4 +32,21 @@ Block::Block(int n) : typenum(n)
 		rows = 3;
 		columns = 1;
 	}
-};
+}
+
+void Block::Rotate()
+{
+	int temp = rows;
+	rows = columns;
+	columns = temp;
+
+	std::array<int, 9> tempBlockIn = { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' };
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			tempBlockIn[3*j+i] = blockIn[3*i+j];
+		}
+	}
+	blockIn = tempBlockIn;
+}

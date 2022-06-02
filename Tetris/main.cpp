@@ -7,5 +7,4 @@ int main()
 	std::cin >> name;
 	Application game(name);
 	game.Run();
-
 }

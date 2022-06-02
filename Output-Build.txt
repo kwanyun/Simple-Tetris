@@ -1,0 +1,12 @@
+﻿Build started...
+1>------ Build started: Project: Tetris, Configuration: Debug x64 ------
+1>Game.cpp
+1>C:\Users\kwan\Desktop\KU\projects\Simple-Tetris\Tetris\Game.cpp(29,88): warning C4244: '+=': conversion from '_Rep' to 'unsigned int', possible loss of data
+1>        with
+1>        [
+1>            _Rep=__int64
+1>        ]
+1>C:\Users\kwan\Desktop\KU\projects\Simple-Tetris\Tetris\Game.cpp(206,37): warning C4553: '==': result of expression not used; did you intend '='?
+1>Tetris.vcxproj -> C:\Users\kwan\Desktop\KU\projects\Simple-Tetris\x64\Debug\Tetris.exe
+1>Done building project "Tetris.vcxproj".
+========== Build: 1 succeeded, 0 failed, 0 up-to-date, 0 skipped ==========
