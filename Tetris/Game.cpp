@@ -19,8 +19,31 @@ void Application::Run()
 	Block* currentBlock = Application::GenBlock(0);
 	while (true)
 	{
+
+		//check key
+		if (GetAsyncKeyState(VK_LEFT) & 0x0001)
+		{
+			BlockMove(currentBlock, 0, -1);
+		}
+		else if (GetAsyncKeyState(VK_RIGHT) & 0x0001)
+		{
+			BlockMove(currentBlock, 0, 1);
+		}
+		else if (GetAsyncKeyState(VK_DOWN) & 0x0001)
+		{
+			BlockMove(currentBlock, 1, 0);
+		}
+		else if (GetAsyncKeyState(VK_SPACE) & 0x0001)
+		{
+			//RotateBlock(currentBlock);
+		}
+		else if (GetAsyncKeyState(VK_ESCAPE) & 0x0001)
+		{
+			isOver = true;
+		}
+
 		//move block
-		if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()- currentTime).count() > 1000)
+		if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - currentTime).count() > 10000)
 		{
 			currentTime = std::chrono::steady_clock::now();
 			//if block current, move down
@@ -35,29 +58,6 @@ void Application::Run()
 				currentBlock = Application::GenBlock(3);
 			}
 		}
-
-		//check key
-		if (GetAsyncKeyState(VK_LEFT) & 0x8000)
-		{
-			BlockMove(currentBlock, 0, -1);
-		}
-		else if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
-		{
-			BlockMove(currentBlock, 0, 1);
-		}
-		else if (GetAsyncKeyState(VK_DOWN) & 0x8000)
-		{
-			BlockMove(currentBlock, 1, 0);
-		}
-		else if (GetAsyncKeyState(VK_SPACE) & 0x8000)
-		{
-			//RotateBlock(currentBlock);
-		}
-		else if (GetAsyncKeyState(VK_ESCAPE) & 0x8000)
-		{
-			isOver = true;
-		}
-
 		//check end
 		if (isOver)
 		{
@@ -146,6 +146,8 @@ bool Application::CheckBlock(Block* theBlock , int row , int col )
 	{
 		for (int j = 0; j < theBlock->columns; j++)
 		{
+			if ((theBlock->curR + row + i) < 0 || (theBlock->curC + col + j < 0) || (theBlock->curR + row + i) > 10 || (theBlock->curC + col + j > 10)||(3 * (i + row) + (j + col)<0))
+				return false;
 			if ((map[theBlock->curR + row + i][theBlock->curC + col + j] != ' ' && theBlock->blockIn[3 * (i + row) + (j + col)] != '@')
 					&& theBlock->blockIn[3 * i + j] != ' ')
 				return false;
