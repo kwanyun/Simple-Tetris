@@ -34,11 +34,11 @@ void Application::Run()
 				currentBlock = Application::GenBlock(duration_cast<milliseconds>(steady_clock::now()-start).count() % 5);
 		}
 		//check if game end
-		if (isOver||map[0][1]=='@'|| map[0][2] == '@')
+		if (isOver||map[0][0]=='@'|| map[0][1] == '@')
 		{
 			system("cls");
 			std::cout << "Game END" << std::endl
-				<<"Your Score : "<<score<<std::endl; return;
+				<<"Your Score : "<<score<<std::endl; break;
 		}
 		BlockScore(currentBlock);
 		if (needUpdate)
@@ -79,7 +79,7 @@ Block* Application::GenBlock(unsigned int genNum)
 	blockGenerated = true;
 	needUpdate = true;
 	
-	if (CheckBlock(mBlock)==FLOOR|| CheckBlock(mBlock) == WALL)
+	if (CheckBlock(mBlock)==FLOOR)
 	{
 		isOver = true;
 		blockGenerated = false;
